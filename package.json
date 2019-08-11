@@ -1,0 +1,45 @@
+{
+  "name": "typeorm-cli",
+  "version": "1.0.1",
+  "description": "typeorm Entity 从数据库中读取自动生成-Mysql",
+  "main": "index.js",
+  "scripts": {
+    "cli": "ts-node bin/cli.ts",
+    "build":"tsc",
+    "prepublish": "npm run build"
+  },
+  "bin": {
+    "typeorm-cli": "build/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bldf/typeorm-cli.git"
+  },
+  "keywords": [
+    "typeorm",
+    "typeorm-cli",
+    "typeorm-entity"
+  ],
+  "author": {
+    "name": "bldf",
+    "email": "bldf@qq.com"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bldf/typeorm-cli/issues"
+  },
+  "homepage": "https://github.com/bldf/typeorm-cli#readme",
+  "dependencies": {
+    "@types/node": "^12.7.1",
+    "colors-console": "^1.0.3",
+    "commander": "^2.20.0",
+    "mkdirp": "^0.5.1",
+    "mysql": "^2.17.1",
+    "reflect-metadata": "^0.1.13",
+    "swig-templates": "^2.0.3",
+    "ts-node": "^8.3.0",
+    "typeorm": "^0.2.18",
+    "typescript": "^3.5.3",
+    "warning": "^4.0.3"
+  }
+}

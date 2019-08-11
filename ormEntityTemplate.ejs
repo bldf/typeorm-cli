@@ -1,0 +1,35 @@
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+
+/**
+ * {{tableComment}}
+ * @Date {{date}}
+ * @author {{author}}
+ * @export
+ * @class {{entityClassName}}
+ */
+@Entity({
+    name: '{{databaseTableName}}'
+})
+export class {{entityClassName}} {
+
+    /**
+     * 主键 id
+     *
+     * @type { number }
+     * @memberof {{entityClassName}}
+     */
+    @PrimaryGeneratedColumn()
+    id: number;
+    {% for column in columns %}
+    /**
+     * {{column.comment}}
+     *
+     * @type { {{column.type}} }
+     * @memberof {{entityClassName}}
+     */
+    @Column({
+        name: '{{column.databaseColumnName}}'
+    })
+    {{column.columnName}}: {{column.type}};
+    {% endfor %}
+}
