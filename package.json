@@ -1,6 +1,6 @@
 {
   "name": "typeorm-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "typeorm Entity 从数据库中读取自动生成-Mysql",
   "main": "index.js",
   "scripts": {
