@@ -61,6 +61,20 @@ export class {{entityClassName}} {
 ```
 ### Demo:数据库表为
 ![image](https://github.com/bldf/typeorm-cli/blob/master/obj6-bg-bg_info.png)
+```
+CREATE TABLE `obj6-bg-bg_info` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `operator` int(11) NOT NULL COMMENT '操作人',
+  `description` varchar(255) NOT NULL COMMENT '描述',
+  `update_time` varchar(255) NOT NULL COMMENT '修改时间',
+  `create_time` varchar(255) NOT NULL COMMENT '创建时间',
+  `content` varchar(255) NOT NULL COMMENT '背景内容',
+  `field1` varchar(255) NOT NULL COMMENT '备用字段1',
+  `field2` varchar(255) NOT NULL COMMENT '备用字段2',
+  `field3` varchar(255) NOT NULL COMMENT '备用字段3',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='背景基本信息表'
+```
 ### 生成的实体类为：
     
 ```
