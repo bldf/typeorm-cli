@@ -1,25 +1,25 @@
 {
-    "type": "mysql",
-    "host": "127.0.0.1",
-    "port": 3306,
-    "username": "root2",
-    "password": "123456",
-    "database": "db_typeorm",
-    "synchronize": true,
-    "logging": false,
-    "entities": [
-       "src/entity/**/*.ts"
-    ],
-    "migrations": [
-       "src/migration/**/*.ts"
-    ],
-    "subscribers": [
-       "src/subscriber/**/*.ts"
-    ],
-    "cli": {
-       "entitiesDir": "dist/entity",
-       "migrationsDir": "build/migration",
-       "subscribersDir": "build/subscriber"
-    },
-    "author":"YXL"
- }
+   "type": "mysql",
+   "host": "192.168.11.203",
+   "port": 3306,
+   "username": "root",
+   "password": "admin123",
+   "database": "db_typeorm",
+   "logging": false,
+   "entities": [
+      "entity/**/*.ts"
+   ],
+   "migrations": [
+      "src/migration/**/*.ts"
+   ],
+   "subscribers": [
+      "src/subscriber/**/*.ts"
+   ],
+   "cli": {
+      "entitiesDir": "entity",
+      "migrationsDir": "build/migration",
+      "subscribersDir": "build/subscriber"
+   },
+   "author": "YXL",
+   "addClassValidate": true
+}

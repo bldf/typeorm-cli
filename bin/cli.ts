@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 require('commander')
-.version(require('../package').version)
+  .version(require('../package').version)
 
 import "reflect-metadata";
 import * as colors from "colors-console";
@@ -17,14 +17,14 @@ let ormEntityTemplateSrc = '';
 if (fs.existsSync(process.cwd() + '/ormEntityTemplate.ejs')) {//如果使用了自定义的模板
   ormEntityTemplateSrc = process.cwd() + '/ormEntityTemplate.ejs';
 } else {
-  ormEntityTemplateSrc =path.join(__dirname, '..','./ormEntityTemplate.ejs') ;
+  ormEntityTemplateSrc = path.join(__dirname, '..', './ormEntityTemplate.ejs');
 }
 
 const template = swig.compileFile(ormEntityTemplateSrc);
 const ormConfig = JSON.parse(fs.readFileSync(process.cwd() + '/ormconfig.json', 'UTF-8'));
-delete ormConfig.entities ;
-delete ormConfig.migrations ;
-delete ormConfig.subscribers ;
+delete ormConfig.entities;
+delete ormConfig.migrations;
+delete ormConfig.subscribers;
 const TIME = Date.now();
 /**
  * 将下划线命名转换为驼峰命名
@@ -81,8 +81,11 @@ interface databaseTable {
  */
 interface databaseTableColumn {
   databaseColumnName: string;
+  databaseComment: string;
+  databaseIsNull:string ;
+  databaseColumnType:string ;
+  databaseColumnTypeLength:string ;
   columnName: string;
-  comment: string;
   type: string;
 }
 
@@ -95,17 +98,30 @@ createConnection(ormConfig).then(async connection => {
     let databaseTableName = table.databaseTableName;
     let outJs = '';
     let newColumns = [];
+    let hasDatabaseColumnCreateTime = false ; 
+    let hasDatabaseColumnUpdateTime = false ; 
     let columns: databaseTableColumn[] = await connection.manager
       .query(`
-            select  column_name as databaseColumnName, column_comment as comment,data_type as type from information_schema.columns
+            select  column_name as databaseColumnName, column_comment as databaseComment,data_type as type ,IS_NULLABLE as databaseIsNull,COLUMN_TYPE as databaseColumnType from information_schema.columns
             where table_schema ='${ormConfig.database}'  and table_name = '${databaseTableName}'       
           `);
     columns.forEach(d => {//将数据库中的下划线命名的字段改为驼峰命名
+      let arr = d.databaseColumnType.match(/\d+/gi) ;
       d.columnName = camelCase(d.databaseColumnName);
       d.type = d.type == 'int' ? 'number' : 'string';
       if (d.columnName !== 'id') {
         newColumns.push(d);
       }
+      if(d.columnName=='updateTime'){
+        hasDatabaseColumnUpdateTime = true ;
+      }
+      if(d.columnName=='createTime'){
+        hasDatabaseColumnCreateTime = true ;
+      }
+      if(arr&&arr.length){
+        d.databaseColumnTypeLength = arr[0] ;
+      }
+
     });
     outJs = template({
       entityClassName: databaseTableNameToEntityClassName(databaseTableName),
@@ -113,7 +129,10 @@ createConnection(ormConfig).then(async connection => {
       date: new Date().toLocaleString(),
       author: ormConfig.author,
       databaseTableName,
-      columns: newColumns
+      columns: newColumns,
+      addClassValidate:ormConfig.addClassValidate,
+      hasDatabaseColumnUpdateTime,
+      hasDatabaseColumnCreateTime
     });
     mkdirp(process.cwd() + '/' + ormConfig.cli.entitiesDir + '/' + databaseTableToEntityClassPathName(databaseTableName), (err) => {//先递归创建文件夹
       if (err) {
@@ -126,7 +145,7 @@ createConnection(ormConfig).then(async connection => {
           if (index == databaseTableNames.length - 1) {
             connection.close();
             let time = (Date.now() - TIME) / 1000;
-            console.log(colors('cyan', `一共生产【${databaseTableNames.length}】张表，一共用时【${time}】秒`));
+            console.log(colors('cyan', `一共创建了【${databaseTableNames.length}】张表对应的实体类，一共用时【${time}】秒`));
           }
         });
       }
@@ -151,3 +170,5 @@ createConnection(ormConfig).then(async connection => {
 // if (program.pineapple) console.log('  - pineapple');
 // if (program.bbqSauce) console.log('  - bbq');
 // console.log('  - %s cheese', program.cheese);
+
+
