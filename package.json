@@ -1,11 +1,11 @@
 {
   "name": "typeorm-cli",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "typeorm Entity 读取数据库表，自动生成实体类",
   "main": "index.js",
   "scripts": {
     "cli": "ts-node bin/cli.ts",
-    "build":"tsc",
+    "build": "tsc",
     "prepublish": "npm run build"
   },
   "bin": {
@@ -33,6 +33,8 @@
     "@types/node": "^12.7.1",
     "colors-console": "^1.0.3",
     "commander": "^2.20.0",
+    "inquirer": "^6.5.1",
+    "js-beautify": "^1.10.2",
     "mkdirp": "^0.5.1",
     "mysql": "^2.17.1",
     "reflect-metadata": "^0.1.13",

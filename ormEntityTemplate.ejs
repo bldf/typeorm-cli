@@ -1,7 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
-
+import { {% if hasDatabaseColumnCreateTime %}BeforeUpdate, {% endif %}{% if hasDatabaseColumnCreateTime %}BeforeInsert,{% endif %} Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+{% if addClassValidate %}import { Max,IsNotEmpty } from "class-validator";{% endif %}
 /**
- * {{tableComment}}
+ * {{tableComment||databaseTableName}}
  * @Date {{date}}
  * @author {{author}}
  * @export
@@ -20,16 +20,54 @@ export class {{entityClassName}} {
      */
     @PrimaryGeneratedColumn()
     id: number;
+
+
     {% for column in columns %}
     /**
-     * {{column.comment}}
+     * {{column.databaseComment || column.columnName}}
      *
      * @type { {{column.type}} }
      * @memberof {{entityClassName}}
      */
-    @Column({
-        name: '{{column.databaseColumnName}}'
-    })
+    @Column({name: '{{column.databaseColumnName}}'})
+    
+    {% if addClassValidate&&column.databaseIsNull=='NO' %}
+    @IsNotEmpty({ message:'【{{column.databaseComment || column.columnName}}】不能为空' }) 
+    {% endif %}
+
+    {% if addClassValidate&&column.databaseColumnTypeLength %}
+    @Max({{ column.databaseColumnTypeLength }},{ message:'【{{ column.databaseComment || column.columnName }}】长度不能超过{{column.databaseColumnTypeLength}}' })
+    {% endif %}
+    
     {{column.columnName}}: {{column.type}};
     {% endfor %}
+
+
+
+    {% if hasDatabaseColumnUpdateTime %}
+    /**
+     *在对数据库表【{{tableComment}}】({{databaseTableName}})修改的时候执行
+     *
+     * @memberof {{entityClassName}}
+     */
+    @BeforeUpdate()
+    beforeUpdateTime() {
+        let  arr = new Date().toLocaleString().match(/\d+/gi) ; 
+        this.updateTime  = [arr![0],arr![1].padStart(2, '0'),arr![2].padStart(2, '0')].join('-')+' '+[arr![3].padStart(2, '0'),arr![4].padStart(2, '0'),arr![5].padStart(2, '0')].join(':') ;
+    }
+    {% endif %}
+
+    {% if hasDatabaseColumnCreateTime %}
+    /**
+     *在对数据库表【{{tableComment}}】({{databaseTableName}})插入的时候执行
+     *
+     * @memberof {{entityClassName}}
+     */
+    @BeforeInsert()
+    beforeCreateTime() {
+        let  arr = new Date().toLocaleString().match(/\d+/gi) ; 
+        let time = [arr![0],arr![1].padStart(2, '0'),arr![2].padStart(2, '0')].join('-')+' '+[arr![3].padStart(2, '0'),arr![4].padStart(2, '0'),arr![5].padStart(2, '0')].join(':') ;
+        this.createTime = this.updateTime = time ;
+    }
+    {% endif %}
 }

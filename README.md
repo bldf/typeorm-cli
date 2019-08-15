@@ -7,25 +7,44 @@
 npm nstall -g typeorm-cli
 ```
 ### 2.使用
-    typeorm-cli
+    控制台执行  typeorm-cli
 ### 3.配置项
-1. ormconfig.json。读取数据库的配置，默认读取当前项目中的ormconfig.json，配置就是 typeorm 的配置 ， 多了一个key:author ；创建者的名字
-2. ormEntityTemplate.ejs 。 配置生成的实体类模板。默认模板如下，如有需要可自己进行配置，模板渲染引擎采用，ejs引擎。（如果采用默认此配置，请忽略）
-### 4.生成的规则
-##### 表生成的规则
-1. 模块采用中横线区分，表名采用下划线区分，
-    2. 数据库表名为：obj6-bg-bg_info ，实体类为：BgInfo.ts
-##### 表字段生成的规则
-
-1. 采用下划线区分
-    2.  数据库表字段为：create_time,实体类为：createTime
-
-### 默认的 ormEntityTemplate.ejs
+ormconfig.json。(在[typeorm](https://typeorm.io/#/using-ormconfig)的配置中添加即可)
+```json
+  {
+   "type": "mysql",
+   "host": "192.168.11.203",
+   "port": 3306,
+   "username": "root",
+   "password": "admin123",
+   "database": "db_typeorm",
+   "logging": false,
+   "entities": [
+      "entity/**/*.ts"
+   ],
+   "migrations": [
+      "src/migration/**/*.ts"
+   ],
+   "subscribers": [
+      "src/subscriber/**/*.ts"
+   ],
+   "cli": {
+      "entitiesDir": "dist/entity",
+      "migrationsDir": "build/migration",
+      "subscribersDir": "build/subscriber"
+   },
+   "author": "bldf",//生成实体类的作者
+   "addClassValidate": true// //是否添加class的验证
+}
 ```
- import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+### 4.生产的实体类模板，自定义
+默认模板如下，采用ejs模板渲染引擎
 
+```typescript
+import { {% if hasDatabaseColumnCreateTime %}BeforeUpdate, {% endif %}{% if hasDatabaseColumnCreateTime %}BeforeInsert,{% endif %} Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+{% if addClassValidate %}import { Max,IsNotEmpty } from "class-validator";{% endif %}
 /**
- * {{tableComment}}
+ * {{tableComment||databaseTableName}}
  * @Date {{date}}
  * @author {{author}}
  * @export
@@ -44,21 +63,69 @@ export class {{entityClassName}} {
      */
     @PrimaryGeneratedColumn()
     id: number;
+
+
     {% for column in columns %}
     /**
-     * {{column.comment}}
+     * {{column.databaseComment || column.columnName}}
      *
      * @type { {{column.type}} }
      * @memberof {{entityClassName}}
      */
-    @Column({
-        name: '{{column.databaseColumnName}}'
-    })
+    @Column({name: '{{column.databaseColumnName}}'})
+    
+    {% if addClassValidate&&column.databaseIsNull=='NO' %}
+    @IsNotEmpty({ message:'【{{column.databaseComment || column.columnName}}】不能为空' }) 
+    {% endif %}
+
+    {% if addClassValidate&&column.databaseColumnTypeLength %}
+    @Max({{ column.databaseColumnTypeLength }},{ message:'【{{ column.databaseComment || column.columnName }}】长度不能超过{{column.databaseColumnTypeLength}}' })
+    {% endif %}
+    
     {{column.columnName}}: {{column.type}};
     {% endfor %}
-}
 
+
+
+    {% if hasDatabaseColumnUpdateTime %}
+    /**
+     *在对数据库表【{{tableComment}}】({{databaseTableName}})修改的时候执行
+     *
+     * @memberof {{entityClassName}}
+     */
+    @BeforeUpdate()
+    beforeUpdateTime() {
+        let  arr = new Date().toLocaleString().match(/\d+/gi) ; 
+        this.updateTime  = [arr![0],arr![1].padStart(2, '0'),arr![2].padStart(2, '0')].join('-')+' '+[arr![3].padStart(2, '0'),arr![4].padStart(2, '0'),arr![5].padStart(2, '0')].join(':') ;
+    }
+    {% endif %}
+
+    {% if hasDatabaseColumnCreateTime %}
+    /**
+     *在对数据库表【{{tableComment}}】({{databaseTableName}})插入的时候执行
+     *
+     * @memberof {{entityClassName}}
+     */
+    @BeforeInsert()
+    beforeCreateTime() {
+        let  arr = new Date().toLocaleString().match(/\d+/gi) ; 
+        let time = [arr![0],arr![1].padStart(2, '0'),arr![2].padStart(2, '0')].join('-')+' '+[arr![3].padStart(2, '0'),arr![4].padStart(2, '0'),arr![5].padStart(2, '0')].join(':') ;
+        this.createTime = this.updateTime = time ;
+    }
+    {% endif %}
+}
 ```
+
+ 
+### 4.生成的规则
+##### 表生成的规则
+1. 模块采用中横线区分，表名采用下划线区分，
+    2. 数据库表名为：obj6-bg-bg_info ，实体类为：obj6/bg/BgInfo.ts
+##### 表字段生成的规则
+
+1. 采用下划线区分
+    2.  数据库表字段为：create_time,实体类为：createTime
+
 ### Demo:数据库表为
 ![image](https://github.com/bldf/typeorm-cli/blob/master/obj6-bg-bg_info.png)
 ```
@@ -75,14 +142,14 @@ CREATE TABLE `obj6-bg-bg_info` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='背景基本信息表'
 ```
-### 生成的实体类为：
+### Demo:生成的实体类为：obj6/bg/BgInfo.ts
     
-```
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
-
+```typescript
+import { BeforeUpdate, BeforeInsert, Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Max, IsNotEmpty } from "class-validator";
 /**
  * 背景基本信息表
- * @Date 2019-8-11 1:54:03 PM
+ * @Date 2019-8-15 18:05:38
  * @author YXL
  * @export
  * @class BgInfo
@@ -91,7 +158,6 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
     name: 'obj6-bg-bg_info'
 })
 export class BgInfo {
-
     /**
      * 主键 id
      *
@@ -100,95 +166,103 @@ export class BgInfo {
      */
     @PrimaryGeneratedColumn()
     id: number;
-    
     /**
      * 操作人
      *
      * @type { number }
      * @memberof BgInfo
      */
-    @Column({
-        name: 'operator'
-    })
+    @Column({ name: 'operator' })
+    @IsNotEmpty({ message: '【操作人】不能为空' })
+    @Max(8, { message: '【操作人】长度不能超过8' })
     operator: number;
-    
     /**
      * 描述
      *
      * @type { string }
      * @memberof BgInfo
      */
-    @Column({
-        name: 'description'
-    })
+    @Column({ name: 'description' })
+    @IsNotEmpty({ message: '【描述】不能为空' })
+    @Max(255, { message: '【描述】长度不能超过255' })
     description: string;
-    
     /**
      * 修改时间
      *
      * @type { string }
      * @memberof BgInfo
      */
-    @Column({
-        name: 'update_time'
-    })
+    @Column({ name: 'update_time' })
+    @IsNotEmpty({ message: '【修改时间】不能为空' })
+    @Max(50, { message: '【修改时间】长度不能超过50' })
     updateTime: string;
-    
     /**
      * 创建时间
      *
      * @type { string }
      * @memberof BgInfo
      */
-    @Column({
-        name: 'create_time'
-    })
+    @Column({ name: 'create_time' })
+    @IsNotEmpty({ message: '【创建时间】不能为空' })
+    @Max(50, { message: '【创建时间】长度不能超过50' })
     createTime: string;
-    
     /**
      * 背景内容
      *
      * @type { string }
      * @memberof BgInfo
      */
-    @Column({
-        name: 'content'
-    })
+    @Column({ name: 'content' })
+    @IsNotEmpty({ message: '【背景内容】不能为空' })
+    @Max(255, { message: '【背景内容】长度不能超过255' })
     content: string;
-    
     /**
      * 备用字段1
      *
      * @type { string }
      * @memberof BgInfo
      */
-    @Column({
-        name: 'field1'
-    })
+    @Column({ name: 'field1' })
+    @Max(255, { message: '【备用字段1】长度不能超过255' })
     field1: string;
-    
     /**
      * 备用字段2
      *
      * @type { string }
      * @memberof BgInfo
      */
-    @Column({
-        name: 'field2'
-    })
+    @Column({ name: 'field2' })
+    @Max(255, { message: '【备用字段2】长度不能超过255' })
     field2: string;
-    
     /**
      * 备用字段3
      *
      * @type { string }
      * @memberof BgInfo
      */
-    @Column({
-        name: 'field3'
-    })
+    @Column({ name: 'field3' })
+    @Max(255, { message: '【备用字段3】长度不能超过255' })
     field3: string;
-    
+    /**
+     *在对数据库表【背景基本信息表】(obj6-bg-bg_info)修改的时候执行
+     *
+     * @memberof BgInfo
+     */
+    @BeforeUpdate()
+    beforeUpdateTime() {
+        let arr = new Date().toLocaleString().match(/\d+/gi);
+        this.updateTime = [arr![0], arr![1].padStart(2, '0'), arr![2].padStart(2, '0')].join('-') + ' ' + [arr![3].padStart(2, '0'), arr![4].padStart(2, '0'), arr![5].padStart(2, '0')].join(':');
+    }
+    /**
+     *在对数据库表【背景基本信息表】(obj6-bg-bg_info)插入的时候执行
+     *
+     * @memberof BgInfo
+     */
+    @BeforeInsert()
+    beforeCreateTime() {
+        let arr = new Date().toLocaleString().match(/\d+/gi);
+        let time = [arr![0], arr![1].padStart(2, '0'), arr![2].padStart(2, '0')].join('-') + ' ' + [arr![3].padStart(2, '0'), arr![4].padStart(2, '0'), arr![5].padStart(2, '0')].join(':');
+        this.createTime = this.updateTime = time;
+    }
 }
-
 ```
