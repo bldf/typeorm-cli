@@ -34,7 +34,7 @@ ormconfig.json。(在[typeorm](https://typeorm.io/#/using-ormconfig)的配置中
       "subscribersDir": "build/subscriber"
    },
    "author": "bldf",//生成实体类的作者
-   "addClassValidate": true// //是否添加class的验证
+   "addClassValidate": true//是否添加class的验证
 }
 ```
 ### 4.生产的实体类模板，自定义
@@ -125,6 +125,9 @@ export class {{entityClassName}} {
 
 1. 采用下划线区分
     2.  数据库表字段为：create_time,实体类为：createTime
+    
+### 生成实体类的时候需要注意
+生成实体类的时候，会覆盖原有的实体类，如果这一次和上一次出现不同，会备份一次到 dist/backup-typeorm-cli/* 中
 
 ### Demo:数据库表为
 ![image](https://github.com/bldf/typeorm-cli/blob/master/obj6-bg-bg_info.png)
