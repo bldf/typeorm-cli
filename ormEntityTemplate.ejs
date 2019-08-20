@@ -67,7 +67,7 @@ export class {{entityClassName}} {
     beforeCreateTime() {
         let  arr = new Date().toLocaleString().match(/\d+/gi) ; 
         let time = [arr![0],arr![1].padStart(2, '0'),arr![2].padStart(2, '0')].join('-')+' '+[arr![3].padStart(2, '0'),arr![4].padStart(2, '0'),arr![5].padStart(2, '0')].join(':') ;
-        this.createTime = this.updateTime = time ;
+        this.createTime = {% if hasDatabaseColumnUpdateTime %}this.updateTime = {% endif %} time ;
     }
     {% endif %}
 }

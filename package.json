@@ -43,5 +43,8 @@
     "typeorm": "^0.2.18",
     "typescript": "^3.5.3",
     "warning": "^4.0.3"
+  },
+  "devDependencies": {
+    "class-validator": "^0.10.0"
   }
 }
