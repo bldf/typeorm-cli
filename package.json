@@ -1,6 +1,6 @@
 {
   "name": "typeorm-cli",
-  "version": "1.0.6 ",
+  "version": "1.0.6",
   "description": "typeorm Entity 读取数据库表，自动生成实体类",
   "main": "index.js",
   "scripts": {
