@@ -4,7 +4,7 @@
 ### 1.全局安装（目前只是测试了mysql）
 
 ```
-npm nstall -g typeorm-cli
+npm install -g typeorm-cli
 ```
 ### 2.使用
     控制台执行  typeorm-cli
